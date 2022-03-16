@@ -1,64 +1,30 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect } from 'react';
 import './App.css';
-import * as Tone from "tone";
-
-const keyboardMapping = {
-  "a": "C4",
-  "w": "C#4",
-  "s": "D4",
-  "e": "D#4",
-  "d": "E4",
-  "f": "F4",
-  "t": "F#4",
-  "g": "G4",
-  "y": "G#4",
-  "h": "A4",
-  "u": "A#4",
-  "j": "B4",
-  "k": "C5",
-  "o": "C#5",
-  "l": "D5",
-  "p": "D#5",
-  ";": "E5",
-  ":": "F5",
-  "[": "F#5",
-  "'": "G5",
-}
+import { usePiano } from './Components/Piano';
+import keyMap from "./keyboardMapping";
 
 function App() {
-  const sampler = new Tone.Sampler({
-    urls: {
-      "C4": "C4.mp3",
-      "D#4": "Ds4.mp3",
-      "F#4": "Fs4.mp3",
-      "A4": "A4.mp3",
-    },
-    release: 1,
-    baseUrl: "https://tonejs.github.io/audio/salamander/",
-  }).toDestination();
+  const { playNote, stopNote } = usePiano();
   
-  const attackOnKey = useCallback(async (event) => {
-    if (!event.repeat) {
-      await Tone.start();
-      keyboardMapping[event.key] && sampler.triggerAttack(keyboardMapping[event.key]);
-    }
-  }, [sampler]);
-  
-  const releaseOnKey = useCallback((event) => {
-    keyboardMapping[event.key] && sampler.triggerRelease(keyboardMapping[event.key]);
-  }, [sampler]);
-
   useEffect(()=> {
-    console.log("mounted")
+    function attackOnKey({repeat, key}) {
+      if (!repeat) {
+        keyMap[key] && playNote(keyMap[key]);
+      }
+    }
+
+    function releaseOnKey({key}) {
+      keyMap[key] && stopNote(keyMap[key]);
+    }
+
     document.addEventListener("keydown", attackOnKey);
     document.addEventListener("keyup", releaseOnKey);
     // on unmount
     return () => {
-      console.log("unmounted")
-      document.removeEventListener("keydown");
-      document.removeEventListener("keyup");
+      document.removeEventListener("keydown", attackOnKey);
+      document.removeEventListener("keyup", releaseOnKey);
     }
-  }, [sampler, attackOnKey, releaseOnKey]);
+  }, [playNote, stopNote]);
   
   return (
     <div className="App">
