@@ -1,6 +1,8 @@
 import { useCallback } from "react";
 import * as Tone from "tone";
 
+const noteKeysMap = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+
 function usePiano() {
   const sampler = new Tone.Sampler({
     urls: {
@@ -39,11 +41,20 @@ function usePiano() {
     baseUrl: "https://tonejs.github.io/audio/salamander/",
   }).toDestination();
 
-  const playNote = useCallback(key => {
-    sampler.triggerAttack(key);
-  }, [sampler]);
+  const getNoteOctave = (note) => {
+    const octave = Math.floor(note / 12);
+    return octave > 0 && octave < 8 ? octave - 1 : undefined;
+  }
 
-  const stopNote = useCallback(key => {
+  const playNote = useCallback(note => {
+    const octave = getNoteOctave(note);
+    const key = `${noteKeysMap[note % 12]}${octave}`
+    sampler.triggerAttack(key);
+  }, [sampler])
+
+  const stopNote = useCallback(note => {
+    const octave = getNoteOctave(note);
+    const key = `${noteKeysMap[note % 12]}${octave}`
     sampler.triggerRelease(key);
   }, [sampler])
 

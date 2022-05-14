@@ -38,12 +38,10 @@ function Keyboard({
   useEffect(() => {
     const KeyboardKeys = new AudioKeys({ polyphony: Infinity });
     KeyboardKeys.down(e => {
-      console.log(e.note);
-      playNote(e.note); // <<< needs to convert to alpha note + octave scale
+      playNote(e.note);
     });
     KeyboardKeys.up(e => {
-      console.log(e.note);
-      stopNote(e.note); // <<< needs to convert to alpha note + octave scale
+      stopNote(e.note);
     })
   }, [playNote, stopNote]);
 
