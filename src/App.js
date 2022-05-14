@@ -1,34 +1,19 @@
-import { useEffect } from 'react';
-import './App.css';
-import { usePiano } from './Components/Piano';
-import keyMap from "./keyboardMapping";
+import styled from 'styled-components';
+import Keyboard from "./Components/Keyboard";
+
+const AppComponent = styled.div`
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  align-items: center;
+  justify-content: center;
+`;
 
 function App() {
-  const { playNote, stopNote } = usePiano();
-  
-  useEffect(()=> {
-    function attackOnKey({repeat, key}) {
-      if (!repeat) {
-        keyMap[key] && playNote(keyMap[key]);
-      }
-    }
-
-    function releaseOnKey({key}) {
-      keyMap[key] && stopNote(keyMap[key]);
-    }
-
-    document.addEventListener("keydown", attackOnKey);
-    document.addEventListener("keyup", releaseOnKey);
-    // on unmount
-    return () => {
-      document.removeEventListener("keydown", attackOnKey);
-      document.removeEventListener("keyup", releaseOnKey);
-    }
-  }, [playNote, stopNote]);
-  
   return (
-    <div className="App">
-    </div>
+    <AppComponent>
+      <Keyboard />
+    </AppComponent>
   );
 }
 
