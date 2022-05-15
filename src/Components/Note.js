@@ -8,7 +8,7 @@ const NoteComponent = styled.div`
   justify-content: flex-end;
   align-items: center;
   border: 0.75px solid grey;
-  height: 64px;
+  height: 80px;
   width: 24px;
   background: ${({ isPlaying }) => isPlaying ? `red` : `white`};
 `;
