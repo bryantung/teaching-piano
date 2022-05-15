@@ -1,9 +1,11 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import styled from "styled-components";
 import Note from "./Note";
 import AudioKeys from "audiokeys";
 import usePiano from "./Piano";
+import { getAllKeysWithinOctaves } from "../Utils/octave";
+import { getKeyFromNumericNote } from "../Utils/key";
 
 const KeyboardComponent = styled.div`
   display: flex;
@@ -11,45 +13,35 @@ const KeyboardComponent = styled.div`
 `;
 
 function Keyboard({
-  octaves = 8,
-  baseOctave = 4,
-  playing = []
+  octaveStart = 0,
+  octaveEnd = 7,
+  baseOctave = 4
 }) {
-  function getOctave(octave) {
-    const octKeys = [];
-    octKeys.push(`C${octave}`); octKeys.push(`C#${octave}`);
-    octKeys.push(`D${octave}`); octKeys.push(`D#${octave}`);
-    octKeys.push(`E${octave}`);
-    octKeys.push(`F${octave}`); octKeys.push(`F#${octave}`);
-    octKeys.push(`G${octave}`); octKeys.push(`G#${octave}`);
-    octKeys.push(`A${octave}`); octKeys.push(`A#${octave}`);
-    octKeys.push(`B${octave}`);
-    return octKeys;
-  }
+  const allKeys = getAllKeysWithinOctaves(octaveStart, octaveEnd);
 
-  const octaveSegments = [];
-  for (let octave = 0; octave < octaves; octave++) {
-    const o = getOctave(octave);
-    octaveSegments.push(o);
-  }
-
-  const [playNote, stopNote] = usePiano();
+  const [playKey, stopKey] = usePiano();
+  const [playingKeys, setPlayingKeys] = useState([]);
 
   useEffect(() => {
     const KeyboardKeys = new AudioKeys({ polyphony: Infinity });
+    KeyboardKeys.set("rootNote", (baseOctave + 1) * 12);
     KeyboardKeys.down(e => {
-      playNote(e.note);
+      const key = getKeyFromNumericNote(e.note);
+      playKey(key);
+      setPlayingKeys(keys => [...keys, key]);
     });
     KeyboardKeys.up(e => {
-      stopNote(e.note);
+      const key = getKeyFromNumericNote(e.note)
+      stopKey(key);
+      setPlayingKeys(keys => keys.filter((k => k !== key)));
     })
-  }, [playNote, stopNote]);
+  }, [playKey, stopKey, baseOctave]);
 
   return (
     <KeyboardComponent>
-      {octaveSegments.map((segment, idx) => {
+      {allKeys.map((segment, idx) => {
         return segment.filter(k => k.indexOf("#") === -1).map(
-          key => <Note note={key} isPlaying={playing.includes(key)} key={`${key}-${idx}`}/>
+          key => <Note note={key} isPlaying={playingKeys.indexOf(key) !== -1} key={`${key}`}/>
         );
       })}
     </KeyboardComponent>
@@ -57,9 +49,9 @@ function Keyboard({
 }
 
 Keyboard.propsType = {
-  octaves: PropTypes.number,
-  baseOctave: PropTypes.number,
-  playing: PropTypes.array
+  octaveStart: PropTypes.number,
+  octaveEnd: PropTypes.number,
+  baseOctave: PropTypes.number
 };
 
 export default Keyboard;
