@@ -4,20 +4,39 @@ import styled from "styled-components";
 import Note from "./Note";
 import AudioKeys from "audiokeys";
 import usePiano from "./Piano";
-import { getAllKeysWithinOctaves } from "../Utils/octave";
-import { getKeyFromNumericNote } from "../Utils/key";
+import { arrayWithNumRange } from "../Utils/array";
+import { whiteKeysMap, getKeyFromNumericNote, blackKeysWithFillerMap } from "../Utils/key";
 
 const KeyboardComponent = styled.div`
+  height: 80px;
+  width: 100%;
+  max-width: 1600px;
   display: flex;
   flex-direction: row;
 `;
+
+const OctaveComponent = styled.div`
+  position: relative;
+  height: 100%;
+  width: 100%;
+`;
+
+const KeysComponent = styled.div`
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: ${({ accidental }) => accidental ? `55%` : `100%`};
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+`
 
 function Keyboard({
   octaveStart = 0,
   octaveEnd = 7,
   baseOctave = 4
 }) {
-  const allKeys = getAllKeysWithinOctaves(octaveStart, octaveEnd);
+  const allOctaves = arrayWithNumRange(octaveStart, octaveEnd);
 
   const [playKey, stopKey] = usePiano();
   const [playingKeys, setPlayingKeys] = useState([]);
@@ -39,11 +58,35 @@ function Keyboard({
 
   return (
     <KeyboardComponent>
-      {allKeys.map((segment, idx) => {
-        return segment.filter(k => k.indexOf("#") === -1).map(
-          key => <Note note={key} isPlaying={playingKeys.indexOf(key) !== -1} key={`${key}`}/>
-        );
-      })}
+      {allOctaves.map(octave => (
+        <OctaveComponent key={`octave-${octave}`}>
+          <KeysComponent>
+            {whiteKeysMap.map((k, i) => {
+              const key = `${k}${octave}`;
+              return (
+                <Note 
+                  note={key}
+                  isPlaying={playingKeys.indexOf(key) !== -1}
+                  key={key} />
+              );
+            }
+            )}
+          </KeysComponent>
+          <KeysComponent accidental>
+            {blackKeysWithFillerMap.map(k => {
+              const key = `${k}${octave}`;
+              return (
+                <Note
+                  accidental
+                  note={key[0] === "X" ? null : key}
+                  isPlaying={playingKeys.indexOf(key) !== -1}
+                  key={key} />
+              );
+            }
+            )}
+          </KeysComponent>
+        </OctaveComponent>
+      ))}
     </KeyboardComponent>
   );
 }
