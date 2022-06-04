@@ -78,7 +78,7 @@ function Keyboard({
               return (
                 <Note
                   accidental
-                  note={key[0] === "X" ? null : key}
+                  note={key}
                   isPlaying={playingKeys.indexOf(key) !== -1}
                   key={key} />
               );
