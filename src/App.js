@@ -1,6 +1,7 @@
 import { child, getDatabase, onDisconnect, push, ref, set } from "firebase/database";
 import PropTypes from "prop-types";
 import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import styled from 'styled-components';
 import Keyboard from "./Components/Keyboard";
 
@@ -13,12 +14,13 @@ const AppComponent = styled.div`
 `;
 
 function App({
-  firebase,
-  sessionId
+  firebase
 }) {
   // const [userRef, setUserRef] = useState(null);
   // const [sessionRef, setSessionRef] = useState(null);
   // const [db, setDb] = useState(null);
+  const location = useLocation();
+  const sessionId = location.hash ? location.hash.substring(1) : undefined;
 
   useEffect(() => {
     const _db = getDatabase(firebase);
@@ -40,12 +42,14 @@ function App({
     const _sessionRef = !!sessionId
       ? child(sessionsRef, `${sessionId}`)
       : push(sessionsRef);
-    set(child(_sessionRef, `users/${_userRef.key}`), true);
+    const _userSessionRef = ref(_db, `sessions/${_sessionRef.key}/users/${_userRef.key}`);
+    set(_userSessionRef, true);
     // setSessionRef(_sessionRef);
+    window.location.hash = _sessionRef.key;
 
     // cleanup when disconnects
     onDisconnect(_userRef).remove();
-    onDisconnect(_sessionRef).remove(`users/${_userRef.key}`);
+    onDisconnect(_userSessionRef).remove();
   }, [firebase, sessionId]);
 
   return (
