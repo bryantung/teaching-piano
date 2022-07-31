@@ -1,4 +1,4 @@
-import { child, getDatabase, onDisconnect, push, ref, set } from "firebase/database";
+import { child, getDatabase, onDisconnect, push, ref, remove, set } from "firebase/database";
 import PropTypes from "prop-types";
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
@@ -50,6 +50,12 @@ function App({
     // cleanup when disconnects
     onDisconnect(_userRef).remove();
     onDisconnect(_userSessionRef).remove();
+
+    // cleanup when unmounting
+    return () => {
+      remove(_userRef);
+      remove(_userSessionRef);
+    };
   }, [firebase, sessionId]);
 
   return (
