@@ -1,9 +1,10 @@
-import { child, getDatabase, onDisconnect, push, ref, remove, set } from "firebase/database";
+import { child, onDisconnect, push, remove, set } from "firebase/database";
 import PropTypes from "prop-types";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import styled from 'styled-components';
 import Keyboard from "./Components/Keyboard";
+import modelInstance from "./Utils/model";
 
 const AppComponent = styled.div`
   display: flex;
@@ -13,36 +14,32 @@ const AppComponent = styled.div`
   justify-content: center;
 `;
 
-function App({
-  firebase
-}) {
+function App() {
   const [userRef, setUserRef] = useState(null);
   const [sessionRef, setSessionRef] = useState(null);
   const location = useLocation();
   const sessionId = location.hash ? location.hash.substring(1) : undefined;
 
   useEffect(() => {
-    const db = getDatabase(firebase);
-
-    const usersRef = ref(db, "activeUsers");
-    const sessionsRef = ref(db, "sessions");
+    const { getModelRef } = modelInstance;
     /**
      * Push a new user in activeUsers list
      */
-    const _userRef = push(usersRef);
+    const _userRef = push(getModelRef("activeUsers"));
     set(_userRef, {
       id: _userRef.key,
       timestamp: +new Date(),
       playingKeys: []
     });
     
+    const sessionsRef = getModelRef("sessions");
     const _sessionRef = !!sessionId
-    ? child(sessionsRef, `${sessionId}`)
-    : push(sessionsRef);
-    const _userSessionRef = ref(db, `sessions/${_sessionRef.key}/users/${_userRef.key}`);
+      ? child(sessionsRef, `${sessionId}`)
+      : push(sessionsRef);
+    const _userSessionRef = getModelRef(`sessions/${_sessionRef.key}/users/${_userRef.key}`);
     set(_userSessionRef, true);
     window.location.hash = _sessionRef.key;
-    
+
     setUserRef(_userRef);
     setSessionRef(_sessionRef);
     
@@ -55,7 +52,7 @@ function App({
       remove(_userRef);
       remove(_userSessionRef);
     };
-  }, [firebase, sessionId]);
+  }, [sessionId]);
 
   return (
     <AppComponent>
@@ -65,7 +62,6 @@ function App({
 }
 
 App.propTypes = {
-  firebase: PropTypes.object.isRequired,
   sessionId: PropTypes.string
 }
 
