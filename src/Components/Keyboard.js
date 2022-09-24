@@ -6,6 +6,7 @@ import AudioKeys from "audiokeys";
 import usePiano from "./Piano";
 import { arrayWithNumRange } from "../Utils/array";
 import { whiteKeysMap, getKeyFromNumericNote, blackKeysWithFillerMap } from "../Utils/key";
+import { set } from "firebase/database";
 
 const KeyboardComponent = styled.div`
   height: 80px;
@@ -34,7 +35,9 @@ const KeysComponent = styled.div`
 function Keyboard({
   octaveStart = 0,
   octaveEnd = 7,
-  baseOctave = 4
+  baseOctave = 4,
+  user,
+  session
 }) {
   const allOctaves = arrayWithNumRange(octaveStart, octaveEnd);
 
@@ -55,6 +58,14 @@ function Keyboard({
       setPlayingKeys(keys => keys.filter((k => k !== key)));
     })
   }, [playKey, stopKey, baseOctave]);
+
+  useEffect(() => {
+    if (user) {
+      set(user, {
+        playingKeys: playingKeys
+      })
+    }
+  }, [playingKeys, user]);
 
   return (
     <KeyboardComponent>
@@ -94,7 +105,9 @@ function Keyboard({
 Keyboard.propsType = {
   octaveStart: PropTypes.number,
   octaveEnd: PropTypes.number,
-  baseOctave: PropTypes.number
+  baseOctave: PropTypes.number,
+  user: PropTypes.object.isRequired,
+  session: PropTypes.object.isRequired
 };
 
 export default Keyboard;
