@@ -6,7 +6,7 @@ import AudioKeys from "audiokeys";
 import usePiano from "./Piano";
 import { arrayWithNumRange } from "../Utils/array";
 import { whiteKeysMap, getKeyFromNumericNote, blackKeysWithFillerMap } from "../Utils/key";
-import { set } from "firebase/database";
+import { child, set } from "firebase/database";
 
 const KeyboardComponent = styled.div`
   height: 80px;
@@ -61,9 +61,7 @@ function Keyboard({
 
   useEffect(() => {
     if (user) {
-      set(user, {
-        playingKeys: playingKeys
-      })
+      set(child(user, "playingKeys"), playingKeys);
     }
   }, [playingKeys, user]);
 

@@ -1,5 +1,4 @@
 import { child, onDisconnect, push, remove, set } from "firebase/database";
-import PropTypes from "prop-types";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import styled from 'styled-components';
@@ -25,7 +24,8 @@ function App() {
     /**
      * Push a new user in activeUsers list
      */
-    const _userRef = push(getModelRef("activeUsers"));
+    const activeUsersRef = getModelRef("activeUsers");
+    const _userRef = push(activeUsersRef);
     set(_userRef, {
       id: _userRef.key,
       timestamp: +new Date(),
@@ -59,10 +59,6 @@ function App() {
       <Keyboard user={userRef} session={sessionRef} />
     </AppComponent>
   );
-}
-
-App.propTypes = {
-  sessionId: PropTypes.string
 }
 
 export default App;
